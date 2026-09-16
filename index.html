@@ -57,8 +57,14 @@
         /* لوحة السلة */
         .cart-panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: fit-content; position: sticky; top: 10px; }
         .cart-title { font-size: 1.1rem; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; font-weight: bold; }
-        .table-badge { background: #238636; color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; width: fit-content; font-weight: bold; }
-        .cart-items { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 12px; }
+        
+        /* خانة إدخال رقم الطاولة الإجبارية */
+        .table-input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+        .table-input-group label { font-size: 0.85rem; color: #8b949e; font-weight: bold; }
+        .table-input { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; font-size: 0.95rem; text-align: center; font-weight: bold; }
+        .table-input:focus { border-color: #58a6ff; outline: none; }
+
+        .cart-items { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; margin-bottom: 12px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; background: #21262d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
         .cart-total { font-size: 1.05rem; font-weight: bold; color: #3fb950; margin-bottom: 12px; border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; }
         .cart-actions { display: flex; flex-direction: column; gap: 8px; }
@@ -71,7 +77,7 @@
         <div class="auth-box">
             <h2>Aero OS</h2>
             <p>سجل مطعمك الآن واستمتع بـ 15 يوماً تجربة مجانية كاملة!</p>
-            <input type="text" id="restaurantName" class="auth-input" placeholder="اسم المطعم (مثلاً: مطعم بغداد السياحي)">
+            <input type="text" id="restaurantName" class="auth-input" placeholder="اسم المطعم (مثلاً: مطعم دجلة)">
             <input type="password" class="auth-input" placeholder="كلمة المرور">
             <button class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: bold;" onclick="loginRestaurant()">دخول أو بدء التجربة المجانية</button>
         </div>
@@ -87,7 +93,7 @@
             <div class="nav-buttons">
                 <button class="btn btn-primary" onclick="alert('شاشة الكاشير والمبيعات اليومية')">الكاشير</button>
                 <button class="btn" onclick="alert('شاشة المطبخ (KDS) الحية')">المطبخ</button>
-                <button class="btn" onclick="alert('لوحة التحكم وإدارة الـ QR للطاولات')">الإدارة</button>
+                <button class="btn" onclick="alert('لوحة التحكم والإدارة')">الإدارة</button>
                 <button class="btn btn-danger" onclick="logout()">خروج</button>
             </div>
         </div>
@@ -116,7 +122,12 @@
             <!-- سلة الطلبات -->
             <div class="cart-panel">
                 <div class="cart-title">سلة الطلبات</div>
-                <div id="tableBadgeContainer"></div>
+                
+                <!-- خانة رقم الطاولة الإجبارية -->
+                <div class="table-input-group" id="tableGroup">
+                    <label id="tableLabel">رقم الطاولة (إجباري):</label>
+                    <input type="number" id="tableNumberInput" class="table-input" placeholder="مثال: 5" min="1">
+                </div>
                 
                 <div class="cart-items" id="cartItems">
                     <div style="color: #8b949e; text-align: center; padding: 20px;">السلة فارغة</div>
@@ -129,15 +140,14 @@
 
                 <div class="cart-actions">
                     <button class="btn btn-primary" onclick="sendOrder()">إرسال الطلب للمطبخ</button>
-                    <button class="btn" style="background: #9e6a03; color: #fff;" onclick="alert('🔔 تم استدعاء الويتر بنجاح للطاولة!')">🔔 طلب ويتر</button>
-                    <button class="btn" style="background: #238636; color: #fff;" onclick="alert('💵 تم إرسال طلب الحساب للكاشير!')">💵 طلب الحساب</button>
+                    <button class="btn" style="background: #9e6a03; color: #fff;" onclick="callWaiter()">🔔 طلب ويتر</button>
+                    <button class="btn" style="background: #238636; color: #fff;" onclick="requestBill()">💵 طلب الحساب</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // قائمة الطعام الشاملة (شرقي، غربي، مقبلات، مشروبات مع الصور)
         const menuItems = [
             { id: 1, name: 'تكة مشوي عراقي', category: 'eastern', price: 12000, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400' },
             { id: 2, name: 'كباب لحم شهي', category: 'eastern', price: 9000, img: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400' },
@@ -155,17 +165,8 @@
 
         let cart = [];
         let orderType = 'صالة';
-        let tableNumber = 'عام';
 
-        // قراءة رقم الطاولة تلقائياً من رابط الـ QR (مثال: ?table=5)
         window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const t = urlParams.get('table');
-            if(t) {
-                tableNumber = t;
-            }
-            
-            // فحص هل المطعم مسجل مسبقاً في الذاكرة المحلية
             const savedRest = localStorage.getItem('aero_restaurant');
             if(savedRest) {
                 document.getElementById('displayRestName').innerText = savedRest;
@@ -195,16 +196,6 @@
             document.getElementById(screenId).classList.add('active');
             if(screenId === 'mainScreen') {
                 renderMenu(menuItems);
-                updateTableBadge();
-            }
-        }
-
-        function updateTableBadge() {
-            const container = document.getElementById('tableBadgeContainer');
-            if(orderType === 'صالة') {
-                container.innerHTML = `<span class="table-badge">🏷️ الطاولة رقم: ${tableNumber}</span>`;
-            } else {
-                container.innerHTML = `<span class="table-badge" style="background: #1f6feb;">🛍️ طلب سفري</span>`;
             }
         }
 
@@ -212,7 +203,18 @@
             orderType = type;
             document.getElementById('type-dine').classList.toggle('active', type === 'صالة');
             document.getElementById('type-takeaway').classList.toggle('active', type === 'سفري');
-            updateTableBadge();
+            
+            const tableGroup = document.getElementById('tableGroup');
+            const tableLabel = document.getElementById('tableLabel');
+            const tableInput = document.getElementById('tableNumberInput');
+
+            if(type === 'سفري') {
+                tableLabel.innerText = 'رقم الزبون / الهاتف (اختياري):';
+                tableInput.placeholder = 'مثال: سفري عام';
+            } else {
+                tableLabel.innerText = 'رقم الطاولة (إجباري):';
+                tableInput.placeholder = 'مثال: 5';
+            }
         }
 
         function renderMenu(items) {
@@ -280,9 +282,38 @@
                 alert('السلة فارغة! الرجاء اختيار وجبات أولاً.');
                 return;
             }
-            alert(`✅ تم إرسال الطلب بنجاح للمطبخ!\nالنوع: ${orderType}\nالطاولة: ${tableNumber}\nالمجموع: ${document.getElementById('cartTotal').innerText}`);
+            
+            const tableVal = document.getElementById('tableNumberInput').value.trim();
+            if(orderType === 'صالة' && !tableVal) {
+                alert('⚠️ عذراً، يجب إدخال رقم الطاولة لتمكين إرسال الطلب!');
+                document.getElementById('tableNumberInput').focus();
+                return;
+            }
+
+            alert(`✅ تم إرسال الطلب بنجاح للمطبخ!\nنوع الطلب: ${orderType}\nرقم الطاولة: ${tableVal || 'سفري'}\nالمجموع: ${document.getElementById('cartTotal').innerText}`);
             cart = [];
+            document.getElementById('tableNumberInput').value = '';
             updateCart();
+        }
+
+        function callWaiter() {
+            const tableVal = document.getElementById('tableNumberInput').value.trim();
+            if(orderType === 'صالة' && !tableVal) {
+                alert('⚠️ يرجى كتابة رقم الطاولة لكي يتمكن الويتر من معرفة مكانك!');
+                document.getElementById('tableNumberInput').focus();
+                return;
+            }
+            alert(`🔔 تم استدعاء الويتر إلى الطاولة رقم: ${tableVal || 'سفري'} بنجاح!`);
+        }
+
+        function requestBill() {
+            const tableVal = document.getElementById('tableNumberInput').value.trim();
+            if(orderType === 'صالة' && !tableVal) {
+                alert('⚠️ يرجى كتابة رقم الطاولة لطلب الحساب!');
+                document.getElementById('tableNumberInput').focus();
+                return;
+            }
+            alert(`💵 تم إرسال طلب الحساب للكاشير للطاولة رقم: ${tableVal || 'سفري'}!`);
         }
     </script>
 </body>
