@@ -166,7 +166,6 @@
     </div>
 
     <script>
-        // قاعدة بيانات النظام التجاري الشهري
         let db = JSON.parse(localStorage.getItem('aero_monthly_db')) || {
             restaurant: null,
             expireDate: null,
@@ -193,7 +192,6 @@
             if(!name) { alert('يرجى إدخال اسم المطعم'); return; }
             if (!db.restaurant) {
                 db.restaurant = name;
-                // منح 15 يوم تجربة مجانية للمطعم الجديد عند التسجيل لأول مرة
                 let trialTime = new Date().getTime() + (15 * 24 * 60 * 60 * 1000);
                 db.expireDate = trialTime;
                 db.isPaid = false;
@@ -217,16 +215,14 @@
 
         function activateLicense() {
             let key = document.getElementById('activationKeyInput').value.trim();
-            // مفتاح التفعيل الشهري بقيمة 100 دولار
             if(key === 'AERO-MONTH' || key === 'VIP100') {
                 db.isPaid = true;
-                // تمديد الاشتراك شهرياً (30 يوماً بالضبط)
                 db.expireDate = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
                 saveDB();
                 alert('تم تجديد اشتراك الـ 100$ للمطعم بنجاح لمدة 30 يوماً قادمة!');
                 checkLicenseAndLoad();
             } else {
-                alert('كود التفعيل الشهري غير صحيح! يرجى تحويل الـ 100$ واستلام الكود الخاص بالشهر الحالي.');
+                alert('كود التفعيل الشهري غير صحيح! استخدم (AERO-MONTH) للتجربة.');
             }
         }
 
@@ -375,7 +371,7 @@
                     </div>
                 `;
             });
-            cHtml.innerHTML = cHtml;
+            cList.innerHTML = cHtml;
         }
 
         function clearService(id) {
@@ -386,7 +382,7 @@
 
         function renderAdmin() {
             let tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = **;
+            tbody.innerHTML = '';
             db.menu.forEach((item, index) => {
                 tbody.innerHTML += `
                     <tr>
