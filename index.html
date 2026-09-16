@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aero OS - نظام إدارة المطاعم السحابي</title>
+    <title>Aero OS - نظام إدارة المطاعم الحقيقي</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0d1117; color: #f0f6fc; min-height: 100vh; display: flex; flex-direction: column; }
@@ -30,6 +30,7 @@
         .btn-primary { background: #1f6feb; color: #fff; border-color: #388bfd; }
         .btn-primary:hover { background: #388bfd; }
         .btn-danger { background: #da3633; color: #fff; border-color: #f85149; }
+        .btn-success { background: #238636; color: #fff; border-color: #2ea043; }
 
         /* شريط الأقسام */
         .categories-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 15px; }
@@ -58,7 +59,6 @@
         .cart-panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: fit-content; position: sticky; top: 10px; }
         .cart-title { font-size: 1.1rem; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; font-weight: bold; }
         
-        /* خانة إدخال رقم الطاولة الإجبارية */
         .table-input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
         .table-input-group label { font-size: 0.85rem; color: #8b949e; font-weight: bold; }
         .table-input { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; font-size: 0.95rem; text-align: center; font-weight: bold; }
@@ -68,45 +68,49 @@
         .cart-item { display: flex; justify-content: space-between; align-items: center; background: #21262d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
         .cart-total { font-size: 1.05rem; font-weight: bold; color: #3fb950; margin-bottom: 12px; border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; }
         .cart-actions { display: flex; flex-direction: column; gap: 8px; }
+
+        /* شاشات النظام الحقيقية (المطبخ، الكاشير، الإدارة) */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h2 { color: #58a6ff; }
+        .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .order-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .order-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- 1. شاشة تسجيل الدخول والتجربة المجانية -->
+    <!-- 1. شاشة تسجيل الدخول -->
     <div id="authScreen" class="screen auth-container active">
         <div class="auth-box">
             <h2>Aero OS</h2>
-            <p>سجل مطعمك الآن واستمتع بـ 15 يوماً تجربة مجانية كاملة!</p>
+            <p>سجل مطعمك وابدأ تجربتك المجانية (15 يوماً)</p>
             <input type="text" id="restaurantName" class="auth-input" placeholder="اسم المطعم (مثلاً: مطعم دجلة)">
             <input type="password" class="auth-input" placeholder="كلمة المرور">
-            <button class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: bold;" onclick="loginRestaurant()">دخول أو بدء التجربة المجانية</button>
+            <button class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: bold;" onclick="loginRestaurant()">دخول للنظام</button>
         </div>
     </div>
 
-    <!-- 2. شاشة النظام والمنيو الرئيسي -->
+    <!-- 2. شاشة المنيو الرئيسية (الزبون) -->
     <div id="mainScreen" class="screen">
         <div class="header">
             <div class="logo-area">
                 <h1 id="displayRestName">Aero OS</h1>
-                <span>النظام السحابي لإدارة المطاعم ($100/شهر)</span>
+                <span>النظام السحابي لإدارة المطاعم</span>
             </div>
             <div class="nav-buttons">
-                <button class="btn btn-primary" onclick="alert('شاشة الكاشير والمبيعات اليومية')">الكاشير</button>
-                <button class="btn" onclick="alert('شاشة المطبخ (KDS) الحية')">المطبخ</button>
-                <button class="btn" onclick="alert('لوحة التحكم والإدارة')">الإدارة</button>
+                <button class="btn btn-primary" onclick="showScreen('cashierScreen')">الكاشير والمبيعات</button>
+                <button class="btn" onclick="showScreen('kdsScreen')">شاشة المطبخ (KDS)</button>
                 <button class="btn btn-danger" onclick="logout()">خروج</button>
             </div>
         </div>
 
         <div class="main-container">
-            <!-- قسم المنيو والأقسام -->
             <div class="menu-section">
                 <div class="order-type-selector">
                     <div class="type-btn active" id="type-dine" onclick="setOrderType('صالة')">🍽️ صالة</div>
                     <div class="type-btn" id="type-takeaway" onclick="setOrderType('سفري')">🛍️ سفري</div>
                 </div>
 
-                <!-- شريط الأقسام -->
                 <div class="categories-bar">
                     <button class="cat-btn active" onclick="filterMenu('all', this)">الكل</button>
                     <button class="cat-btn" onclick="filterMenu('eastern', this)">🕌 أكلات شرقية</button>
@@ -115,15 +119,12 @@
                     <button class="cat-btn" onclick="filterMenu('drinks', this)">🥤 مشروبات</button>
                 </div>
 
-                <!-- شبكة عرض الوجبات -->
                 <div class="items-grid" id="itemsGrid"></div>
             </div>
 
-            <!-- سلة الطلبات -->
             <div class="cart-panel">
                 <div class="cart-title">سلة الطلبات</div>
                 
-                <!-- خانة رقم الطاولة الإجبارية -->
                 <div class="table-input-group" id="tableGroup">
                     <label id="tableLabel">رقم الطاولة (إجباري):</label>
                     <input type="number" id="tableNumberInput" class="table-input" placeholder="مثال: 5" min="1">
@@ -141,10 +142,34 @@
                 <div class="cart-actions">
                     <button class="btn btn-primary" onclick="sendOrder()">إرسال الطلب للمطبخ</button>
                     <button class="btn" style="background: #9e6a03; color: #fff;" onclick="callWaiter()">🔔 طلب ويتر</button>
-                    <button class="btn" style="background: #238636; color: #fff;" onclick="requestBill()">💵 طلب الحساب</button>
+                    <button class="btn btn-success" onclick="requestBill()">💵 طلب الحساب</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 3. شاشة المطبخ الحقيقية (KDS) -->
+    <div id="kdsScreen" class="screen">
+        <div class="page-header">
+            <h2>شاشة المطبخ الحية (الطلبات الواردة)</h2>
+            <button class="btn" onclick="showScreen('mainScreen')">العودة للمنيو</button>
+        </div>
+        <div class="kds-grid" id="kdsOrdersGrid">
+            <div style="color: #8b949e; grid-column: 1/-1; text-align: center; padding: 40px;">لا توجد طلبات جديدة حالياً</div>
+        </div>
+    </div>
+
+    <!-- 4. شاشة الكاشير الحقيقية -->
+    <div id="cashierScreen" class="screen">
+        <div class="page-header">
+            <h2>لوحة الكاشير والمبيعات اليومية</h2>
+            <button class="btn" onclick="showScreen('mainScreen')">العودة للمنيو</button>
+        </div>
+        <div style="background: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h3 style="color: #3fb950; margin-bottom: 5px;" id="totalRevenue">0 د.ع</h3>
+            <p style="color: #8b949e; font-size: 0.9rem;">إجمالي مبيعات اليوم</p>
+        </div>
+        <div class="kds-grid" id="cashierOrdersGrid"></div>
     </div>
 
     <script>
@@ -165,6 +190,7 @@
 
         let cart = [];
         let orderType = 'صالة';
+        let activeOrders = JSON.parse(localStorage.getItem('aero_orders')) || [];
 
         window.onload = function() {
             const savedRest = localStorage.getItem('aero_restaurant');
@@ -194,8 +220,13 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+            
             if(screenId === 'mainScreen') {
                 renderMenu(menuItems);
+            } else if(screenId === 'kdsScreen') {
+                renderKDSOrders();
+            } else if(screenId === 'cashierScreen') {
+                renderCashierOrders();
             }
         }
 
@@ -204,13 +235,12 @@
             document.getElementById('type-dine').classList.toggle('active', type === 'صالة');
             document.getElementById('type-takeaway').classList.toggle('active', type === 'سفري');
             
-            const tableGroup = document.getElementById('tableGroup');
             const tableLabel = document.getElementById('tableLabel');
             const tableInput = document.getElementById('tableNumberInput');
 
             if(type === 'سفري') {
                 tableLabel.innerText = 'رقم الزبون / الهاتف (اختياري):';
-                tableInput.placeholder = 'مثال: سفري عام';
+                tableInput.placeholder = 'مثال: سفري';
             } else {
                 tableLabel.innerText = 'رقم الطاولة (إجباري):';
                 tableInput.placeholder = 'مثال: 5';
@@ -290,10 +320,73 @@
                 return;
             }
 
-            alert(`✅ تم إرسال الطلب بنجاح للمطبخ!\nنوع الطلب: ${orderType}\nرقم الطاولة: ${tableVal || 'سفري'}\nالمجموع: ${document.getElementById('cartTotal').innerText}`);
+            const newOrder = {
+                id: Date.now().toString().slice(-4),
+                type: orderType,
+                table: tableVal || 'سفري',
+                items: [...cart],
+                total: cart.reduce((sum, item) => sum + (item.price * item.qty), 0),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'قيد التحضير'
+            };
+
+            activeOrders.push(newOrder);
+            localStorage.setItem('aero_orders', JSON.stringify(activeOrders));
+
+            alert(`✅ تم إرسال الطلب رقم #${newOrder.id} للمطبخ بنجاح!`);
             cart = [];
             document.getElementById('tableNumberInput').value = '';
             updateCart();
+        }
+
+        function renderKDSOrders() {
+            const grid = document.getElementById('kdsOrdersGrid');
+            if(activeOrders.length === 0) {
+                grid.innerHTML = '<div style="color: #8b949e; grid-column: 1/-1; text-align: center; padding: 40px;">لا توجد طلبات جديدة حالياً</div>';
+                return;
+            }
+
+            grid.innerHTML = activeOrders.map((ord, index) => `
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span>طلب #${ord.id} (${ord.type})</span>
+                        <span style="color: #3fb950;">الطاولة: ${ord.table}</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #8b949e;">الوقت: ${ord.time}</div>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin: 5px 0;">
+                        ${ord.items.map(i => `<div>• ${i.name} (${i.qty})</div>`).join('')}
+                    </div>
+                    <div style="font-weight: bold; color: #58a6ff;">المجموع: ${ord.total.toLocaleString()} د.ع</div>
+                    <button class="btn btn-success" onclick="completeOrder(${index})">إنجاز الطلب وتسليمه</button>
+                </div>
+            `).join('');
+        }
+
+        function completeOrder(index) {
+            activeOrders.splice(index, 1);
+            localStorage.setItem('aero_orders', JSON.stringify(activeOrders));
+            renderKDSOrders();
+        }
+
+        function renderCashierOrders() {
+            const grid = document.getElementById('cashierOrdersGrid');
+            const totalRev = activeOrders.reduce((sum, ord) => sum + ord.total, 0);
+            document.getElementById('totalRevenue').innerText = totalRev.toLocaleString() + ' د.ع';
+
+            if(activeOrders.length === 0) {
+                grid.innerHTML = '<div style="color: #8b949e; grid-column: 1/-1; text-align: center; padding: 40px;">لا توجد مبيعات نشطة حالياً</div>';
+                return;
+            }
+
+            grid.innerHTML = activeOrders.map(ord => `
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span>طلب #${ord.id} (${ord.type})</span>
+                        <span>الطاولة: ${ord.table}</span>
+                    </div>
+                    <div style="font-weight: bold; color: #3fb950;">المبلغ: ${ord.total.toLocaleString()} د.ع</div>
+                </div>
+            `).join('');
         }
 
         function callWaiter() {
@@ -303,7 +396,7 @@
                 document.getElementById('tableNumberInput').focus();
                 return;
             }
-            alert(`🔔 تم استدعاء الويتر إلى الطاولة رقم: ${tableVal || 'سفري'} بنجاح!`);
+            alert(`🔔 تم إرسال نداء الويتر للطاولة رقم: ${tableVal || 'سفري'}`);
         }
 
         function requestBill() {
@@ -313,7 +406,7 @@
                 document.getElementById('tableNumberInput').focus();
                 return;
             }
-            alert(`💵 تم إرسال طلب الحساب للكاشير للطاولة رقم: ${tableVal || 'سفري'}!`);
+            alert(`💵 تم إرسال طلب الحساب للكاشير للطاولة رقم: ${tableVal || 'سفري'}`);
         }
     </script>
 </body>
